@@ -109,25 +109,49 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-3xl font-extrabold mb-6 text-center text-[#4CAF50]">Blogger Comic Post Generator</h1>
-        <p class="text-center text-gray-400 mb-6">Fetch comic details from MangaDex and generate formatted HTML and Tags for your Blogger post.</p>
+        <h1 class="text-3xl font-extrabold mb-6 text-center text-[#4CAF50]">Blogger Comic Post Generator (Static Fix)</h1>
+        <p class="text-center text-gray-400 mb-6">
+            **CORS FIX:** The automatic fetch failed due to browser security. This version requires manual input for reliable data generation.
+        </p>
 
-        <div id="security-warning" class="warning">
-            <strong>CLIENT-SIDE WARNING:</strong> For this simple, serverless website, your MangaDex token (if used) will be visible in the browser's source code. Only use a token if you understand and accept this risk.
+        <div class="input-group">
+            <label for="comicName">1. Comic Name (Used for Tags and Series Label):</label>
+            <input type="text" id="comicName" placeholder="e.g., The Return of the Disaster-Class Hero">
+        </div>
+
+        <div class="input-group">
+            <label for="comicType">2. Comic Type (Used for Tags):</label>
+            <input type="text" id="comicType" placeholder="e.g., Manhwa, Manga, Webtoon">
+        </div>
+
+        <div class="input-group">
+            <label for="synopsis">3. Synopsis (Paste text here):</label>
+            <textarea id="synopsis" rows="4" placeholder="Paste the full synopsis from NovelUpdates or another source."></textarea>
+        </div>
+
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="author">4. Author / Artist:</label>
+                <input type="text" id="author" placeholder="e.g., San-G">
+            </div>
+            <div class="input-group">
+                <label for="releaseYear">5. Release Year:</label>
+                <input type="text" id="releaseYear" placeholder="e.g., 2023">
+            </div>
         </div>
         
         <div class="input-group">
-            <label for="comicName">Comic Name:</label>
-            <input type="text" id="comicName" placeholder="Enter the comic title (e.g., Solo Leveling)">
-        </div>
-
-        <div class="input-group">
-            <label for="mdToken">MangaDex Personal Token (Optional, for higher rate limits):</label>
-            <input type="text" id="mdToken" placeholder="Paste your MangaDex JWT or OAuth Token here">
+            <label for="coverUrl">6. Cover Image URL (MUST be a direct image link!):</label>
+            <input type="text" id="coverUrl" placeholder="Paste the direct URL to the cover image here (e.g., https://example.com/cover.webp)">
         </div>
         
         <button class="btn-green" id="generateButton" onclick="generateContent()">
@@ -135,7 +159,7 @@
         </button>
         <div id="loading" style="display: none; margin-top: 20px;">
             <div class="loading-spinner"></div>
-            <p class="text-center text-gray-400 mt-2">Searching MangaDex...</p>
+            <p class="text-center text-gray-400 mt-2">Generating content...</p>
         </div>
 
         <div id="results-container" style="display: none;">
@@ -162,102 +186,39 @@
     </div>
 
     <script>
-        const MANGADEX_BASE = 'https://api.mangadex.org';
-        const IMAGE_BASE = 'https://uploads.mangadex.org/covers';
-
-        /**
-         * Converts fetched MangaDex data into the required Blogger HTML format.
-         * @param {object} data - The main manga object from MangaDex.
-         * @param {object[]} relationships - The relationships array for author/artist/cover.
-         * @returns {string} The formatted HTML string.
-         */
-        function formatHtml(data, relationships) {
-            const attrs = data.attributes;
-            const title = attrs.title.en || attrs.title[Object.keys(attrs.title)[0]] || 'Untitled';
-            const synopsis = attrs.description.en || attrs.description[Object.keys(attrs.description)[0]] || 'No synopsis available.';
-            const releaseYear = new Date(attrs.createdAt).getFullYear();
-            
-            const author = relationships.find(rel => rel.type === 'author')?.attributes.name || 'Unknown';
-            const artist = relationships.find(rel => rel.type === 'artist')?.attributes.name || author;
-
-            const coverRel = relationships.find(rel => rel.type === 'cover_art');
-            const coverFilename = coverRel ? coverRel.attributes.fileName : 'placeholder.jpg';
-            const mangaId = data.id;
-
-            // Generate image URL (using a placeholder for width/height if not available)
-            const imageUrl = coverRel ? `${IMAGE_BASE}/${mangaId}/${coverFilename}` : `https://placehold.co/2000x2860/2b2b2b/4CAF50?text=NO+COVER+FOUND`;
-            const imageWidth = 2000;
-            const imageHeight = 2860;
-
-            // Format synopsis to match the structure in Post.txt
-            const [synopsisLine1, synopsisRemaining] = splitSynopsis(synopsis);
-
-            return `[source: 7] <!-- 1. COVER IMAGE (Must be first for the homepage card thumbnail) -->
-<div class="separator" style="clear: both;"><a href="${imageUrl}" style="display: block; padding: 1em 0; text-align: center; "><img alt="" border="0" data-original-height="${imageHeight}" data-original-width="${imageWidth}" src="${imageUrl}"/></a></div>
-
-<!-- 2. METADATA (Hidden fields - must use these specific IDs!) -->
-<span id="syn_bod" style="white-space: pre-wrap" class="p-4 bg-white/10 rounded-lg">
-"${synopsisLine1}"
-${synopsisRemaining}
-</span>
-<span id="tauther">${author}</span>
-<span id="tartist">${artist}</span> <!-- Add if applicable -->
-<span id="trelease">${releaseYear}</span>
-
-<!-- 3. CRITICAL: Hidden element containing the UNIQUE SERIES LABEL -->
-<div class="chapter_get" data-labelchapter="${title}"></div>`;
-        }
-
-        /**
-         * Determines the comic type (Manga, Manhwa, Manhua, Webtoon) based on tags and demographics.
-         * @param {object} data - The main manga object from MangaDex.
-         * @returns {string} The derived comic type tag.
-         */
-        function getComicType(data) {
-            const attrs = data.attributes;
-            const tags = attrs.tags.map(tag => tag.attributes.name.en);
-            const demo = attrs.publicationDemographic;
-            const contentRating = attrs.contentRating;
-
-            if (tags.includes('Manhwa') || tags.includes('Webtoon') || tags.includes('Long Strip')) {
-                return 'Manhwa/Webtoon';
-            }
-            if (tags.includes('Manhua')) {
-                return 'Manhua';
-            }
-            if (contentRating === 'erotica' || contentRating === 'pornographic') {
-                return 'Hentai/Adult';
-            }
-            if (demo === 'shounen' || demo === 'seinen' || demo === 'shoujo' || demo === 'josei') {
-                return 'Manga';
-            }
-            return 'Comic';
-        }
+        // Placeholder values for image dimensions from your original Post.txt
+        const IMAGE_WIDTH = 2000;
+        const IMAGE_HEIGHT = 2860;
 
         /**
          * Splits the synopsis into a first line (quoted) and remaining content.
-         * @param {string} text 
-         * @returns {string[]} [firstLine, remainingText]
          */
         function splitSynopsis(text) {
             if (!text) return ['No synopsis.', ''];
-            // Normalize spaces and split by sentence or newline
+            // Normalize spaces and try to split by the first sentence
             const cleanText = text.trim().replace(/\s+/g, ' ');
             const sentences = cleanText.match(/[^.!?]+[.!?]/g) || [cleanText];
             
+            // First line is the first detected sentence (or all of it), with quotes escaped
             const firstLine = sentences[0] ? sentences[0].trim().replace(/"/g, "'") : cleanText.replace(/"/g, "'");
 
+            // Remaining is the rest
             const remaining = sentences.slice(1).join(' ').trim();
             
             return [firstLine, remaining];
         }
 
-        // ----------------------------------------------------------------------
-        // MAIN FUNCTION: Fetches data and updates the UI
-        // ----------------------------------------------------------------------
+        /**
+         * MAIN FUNCTION: Reads manual inputs and generates the files.
+         */
         async function generateContent() {
             const comicName = document.getElementById('comicName').value.trim();
-            const token = document.getElementById('mdToken').value.trim();
+            const comicType = document.getElementById('comicType').value.trim();
+            const synopsis = document.getElementById('synopsis').value.trim();
+            const author = document.getElementById('author').value.trim();
+            const releaseYear = document.getElementById('releaseYear').value.trim();
+            const coverUrl = document.getElementById('coverUrl').value.trim();
+            
             const resultsContainer = document.getElementById('results-container');
             const errorElement = document.getElementById('error-message');
             const loadingElement = document.getElementById('loading');
@@ -266,8 +227,8 @@ ${synopsisRemaining}
             errorElement.style.display = 'none';
             resultsContainer.style.display = 'none';
 
-            if (!comicName) {
-                errorElement.textContent = 'Please enter a comic name.';
+            if (!comicName || !synopsis || !coverUrl || !author || !comicType) {
+                errorElement.textContent = 'Please fill in all required fields (Name, Type, Synopsis, Author, Cover URL).';
                 errorElement.style.display = 'block';
                 return;
             }
@@ -276,40 +237,37 @@ ${synopsisRemaining}
             generateButton.disabled = true;
 
             try {
-                // 1. Construct Headers (include token if provided)
-                const headers = {};
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
+                // 1. Format Synopsis
+                const [synopsisLine1, synopsisRemaining] = splitSynopsis(synopsis);
 
-                // 2. Search MangaDex for the comic name
-                const searchUrl = `${MANGADEX_BASE}/manga?title=${encodeURIComponent(comicName)}&limit=1&includes[]=author&includes[]=artist&includes[]=cover_art`;
+                // 2. Generate Post Content HTML
+                const postContentHtml = `<!-- 1. COVER IMAGE (Must be first for the homepage card thumbnail) -->
+<div class="separator" style="clear: both;"><a href="${coverUrl}" style="display: block; padding: 1em 0; text-align: center; "><img alt="" border="0" data-original-height="${IMAGE_HEIGHT}" data-original-width="${IMAGE_WIDTH}" src="${coverUrl}"/></a></div>
+
+<!-- 2. METADATA (Hidden fields - must use these specific IDs!) -->
+<span id="syn_bod" style="white-space: pre-wrap" class="p-4 bg-white/10 rounded-lg">
+"${synopsisLine1}"
+${synopsisRemaining}
+</span>
+<span id="tauther">${author}</span>
+<span id="tartist">${author}</span> <!-- Using Author as Artist if not separate -->
+<span id="trelease">${releaseYear}</span>
+
+<!-- 3. CRITICAL: Hidden element containing the UNIQUE SERIES LABEL -->
+<div class="chapter_get" data-labelchapter="${comicName}"></div>`;
                 
-                const response = await fetch(searchUrl, { headers: headers });
-                const searchJson = await response.json();
-
-                if (!response.ok || searchJson.data.length === 0) {
-                    throw new Error(searchJson.errors ? searchJson.errors[0].detail : `Comic not found or API failed (Status: ${response.status})`);
-                }
-
-                const mangaData = searchJson.data[0];
-                const relationships = mangaData.relationships;
-
-                // 3. Generate Content and Tags
-                const postContentHtml = formatHtml(mangaData, relationships);
-                const type = getComicType(mangaData);
-                const title = mangaData.attributes.title.en || mangaData.attributes.title[Object.keys(mangaData.attributes.title)[0]];
-
-                const tagsText = `${title},Series,${type}`;
+                // 3. Generate Tags Text
+                const tagsText = `${comicName},Series,${comicType}`;
 
                 // 4. Update UI
                 document.getElementById('postContentOutput').textContent = postContentHtml;
                 document.getElementById('tagsOutput').textContent = tagsText;
                 resultsContainer.style.display = 'block';
+                console.log("Post content successfully generated from manual input.");
 
             } catch (error) {
-                console.error("Fetch Error:", error);
-                errorElement.textContent = `Error generating post: ${error.message}. Please check the console for details.`;
+                console.error("Error generating post:", error);
+                errorElement.textContent = `An internal error occurred during formatting: ${error.message}`;
                 errorElement.style.display = 'block';
             } finally {
                 loadingElement.style.display = 'none';
