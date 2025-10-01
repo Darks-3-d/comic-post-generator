@@ -1,300 +1,358 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blogger Comic Post Generator</title>
-    <!-- Load Tailwind CSS for modern styling -->
+    <title>Comic Admin Toolkit</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles to match the dark theme and font */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
+            font-family: 'Jost', sans-serif;
+            background-color: #111827;
         }
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: #2b2b2b;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-        }
-        .input-group, .results-group {
-            margin-bottom: 20px;
-        }
-        label {
+        label, legend {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #ccc;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #d1d5db; /* gray-300 */
         }
-        input[type="text"], textarea {
+        input, textarea, select {
+            background-color: #374151; /* gray-700 */
+            border: 1px solid #4b5563; /* gray-600 */
+            color: #f3f4f6; /* gray-100 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
             width: 100%;
-            padding: 12px;
-            border: 1px solid #444;
-            background: #1e1e1e;
-            color: #ffffff;
-            border-radius: 6px;
-            transition: border-color 0.3s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input[type="text"]:focus, textarea:focus {
-            border-color: #4CAF50;
+        input:focus, textarea:focus, select:focus {
             outline: none;
+            border-color: #a855f7; /* purple-500 */
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.5);
         }
-        .btn-green {
-            background-color: #4CAF50;
+        .btn {
+            background-color: #8b5cf6; /* purple-600 */
             color: white;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 6px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.2s;
         }
-        .btn-green:hover {
-            background-color: #45a049;
-            transform: translateY(-1px);
+        .btn:hover {
+            background-color: #7c3aed; /* purple-700 */
         }
-        #results-container {
-            margin-top: 30px;
-            border-top: 2px dashed #444;
-            padding-top: 30px;
+        .btn-secondary {
+            background-color: #4b5563; /* gray-600 */
         }
-        pre {
-            white-space: pre-wrap;
-            word-break: break-all;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #444;
-            overflow-x: auto;
-            max-height: 300px;
+        .btn-secondary:hover {
+            background-color: #6b7280; /* gray-500 */
         }
-        .download-row {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .download-row button {
-            flex-grow: 1;
-        }
-        .warning {
-            padding: 10px;
-            background-color: #ffcc0033;
-            color: #ffcc00;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            border-left: 4px solid #ffcc00;
-        }
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #4CAF50;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        .btn-green { background-color: #10b981; }
+        .btn-green:hover { background-color: #059669; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1 class="text-3xl font-extrabold mb-6 text-center text-[#4CAF50]">Blogger Comic Post Generator (Static Fix)</h1>
-        <p class="text-center text-gray-400 mb-6">
-            **CORS FIX:** The automatic fetch failed due to browser security. This version requires manual input for reliable data generation.
-        </p>
+<body class="text-gray-200">
 
-        <div class="input-group">
-            <label for="comicName">1. Comic Name (Used for Tags and Series Label):</label>
-            <input type="text" id="comicName" placeholder="e.g., The Return of the Disaster-Class Hero">
-        </div>
+    <div class="container mx-auto max-w-5xl p-4 sm:p-8 space-y-8">
+        <header class="text-center">
+            <h1 class="text-4xl font-bold text-purple-400">Comic Admin Toolkit</h1>
+            <p class="text-gray-400 mt-2">A one-stop tool to extract URLs and generate comic JSON files.</p>
+        </header>
 
-        <div class="input-group">
-            <label for="comicType">2. Comic Type (Used for Tags):</label>
-            <input type="text" id="comicType" placeholder="e.g., Manhwa, Manga, Webtoon">
-        </div>
+        <!-- URL Extractor -->
+        <div class="bg-gray-900 p-8 rounded-lg border border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 border-b border-gray-600 pb-2">1. URL Extractor</h2>
+            <p class="text-gray-400 mb-4">Paste raw text or HTML to extract all image URLs.</p>
+            <textarea id="input-text" rows="8" placeholder="Paste your raw text or HTML from Blogger, etc."></textarea>
+            <button id="extract-btn" class="btn mt-4">Extract URLs</button>
 
-        <div class="input-group">
-            <label for="synopsis">3. Synopsis (Paste text here):</label>
-            <textarea id="synopsis" rows="4" placeholder="Paste the full synopsis from NovelUpdates or another source."></textarea>
-        </div>
-
-        <div class="grid-2">
-            <div class="input-group">
-                <label for="author">4. Author / Artist:</label>
-                <input type="text" id="author" placeholder="e.g., San-G">
-            </div>
-            <div class="input-group">
-                <label for="releaseYear">5. Release Year:</label>
-                <input type="text" id="releaseYear" placeholder="e.g., 2023">
+            <div id="output-section-extractor" class="mt-6 hidden">
+                <h3 id="output-title-extractor" class="text-xl font-semibold mb-2">Found URLs</h3>
+                <div class="flex items-center gap-4 mb-4">
+                     <button id="copy-all-btn" class="btn-secondary text-sm px-3 py-1.5 rounded-md">Copy All URLs</button>
+                     <p id="copy-all-status" class="text-sm text-green-400"></p>
+                </div>
+                <div id="output-list-extractor" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    <!-- Extracted URLs will be listed here -->
+                </div>
             </div>
         </div>
-        
-        <div class="input-group">
-            <label for="coverUrl">6. Cover Image URL (MUST be a direct image link!):</label>
-            <input type="text" id="coverUrl" placeholder="Paste the direct URL to the cover image here (e.g., https://example.com/cover.webp)">
-        </div>
-        
-        <button class="btn-green" id="generateButton" onclick="generateContent()">
-            GENERATE POST
-        </button>
-        <div id="loading" style="display: none; margin-top: 20px;">
-            <div class="loading-spinner"></div>
-            <p class="text-center text-gray-400 mt-2">Generating content...</p>
-        </div>
 
-        <div id="results-container" style="display: none;">
-            <h2 class="text-2xl font-bold mt-8 mb-4">Generated Content Ready</h2>
+        <!-- JSON Generator -->
+        <div class="bg-gray-900 p-8 rounded-lg border border-gray-700">
+             <h2 class="text-2xl font-semibold mb-4 border-b border-gray-600 pb-2">2. JSON Generator</h2>
+             <p class="text-gray-400 mb-4">Load an existing file to edit, or fill out the form to create a new one.</p>
             
-            <div class="results-group">
-                <label>1. Post Content HTML (`post_content.txt`):</label>
-                <pre id="postContentOutput" class="text-sm"></pre>
+            <!-- Load Existing -->
+            <div class="bg-gray-800/50 p-4 rounded-md mb-6 border border-gray-700">
+                <h3 class="text-lg font-semibold mb-2">Load Existing Comic JSON</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div>
+                        <label for="json-file-input" class="text-sm">Load from file</label>
+                        <input type="file" id="json-file-input" accept=".json" class="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200"/>
+                    </div>
+                    <div>
+                         <label for="json-text-input" class="text-sm">Or paste JSON content</label>
+                        <textarea id="json-text-input" rows="2" placeholder="Paste the content of your comic.json file here..."></textarea>
+                        <button type="button" id="load-json-text-btn" class="btn mt-2">Load from Text</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="results-group">
-                <label>2. Tags List (`labels.txt`):</label>
-                <pre id="tagsOutput" class="text-sm"></pre>
-            </div>
+            <!-- Generator Form -->
+            <form id="comic-form" class="space-y-6">
+                <h3 id="form-title" class="text-xl font-semibold">Create New Comic</h3>
+                
+                <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="comic-id">Comic ID</label>
+                        <input type="text" id="comic-id" placeholder="e.g., space-adventure (no spaces)" required>
+                    </div>
+                    <div>
+                        <label for="comic-title">Comic Title</label>
+                        <input type="text" id="comic-title" placeholder="e.g., The Great Space Adventure" required>
+                    </div>
+                    <div>
+                        <label for="comic-status">Status</label>
+                        <select id="comic-status">
+                            <option>Ongoing</option>
+                            <option>Completed</option>
+                            <option>Hiatus</option>
+                            <option>Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="comic-tags">Tags (comma separated)</label>
+                        <input type="text" id="comic-tags" placeholder="e.g., Action, Fantasy, Manhwa">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="comic-cover">Cover Image URL</label>
+                        <input type="url" id="comic-cover" placeholder="https://..." required>
+                    </div>
+                     <div class="md:col-span-2">
+                        <label for="comic-description">Description</label>
+                        <textarea id="comic-description" rows="3" placeholder="A short summary..." required></textarea>
+                    </div>
+                </fieldset>
 
-            <div class="download-row">
-                <button class="btn-green" onclick="downloadFile('postContentOutput', 'post_content.txt')">DOWNLOAD HTML FILE</button>
-                <button class="btn-green" onclick="downloadFile('tagsOutput', 'labels.txt')">DOWNLOAD TAGS FILE</button>
-            </div>
+                <fieldset>
+                    <legend class="text-lg font-semibold mb-2">Chapters</legend>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                        <div>
+                            <label for="first-chapter-date">First Chapter Publish Date</label>
+                            <input type="date" id="first-chapter-date" required>
+                        </div>
+                        <div class="flex items-end gap-4">
+                            <div class="flex-grow">
+                                <label for="chapter-count">Total Chapters</label>
+                                <input type="number" id="chapter-count" min="1" value="1" class="w-full">
+                            </div>
+                            <button type="button" id="generate-chapters-btn" class="btn h-12 flex-shrink-0">Set</button>
+                        </div>
+                    </div>
+                    <div id="chapters-container" class="space-y-6 mt-6"></div>
+                </fieldset>
+                
+                <div class="text-center pt-4">
+                     <button type="submit" id="generate-btn" class="btn text-lg w-full md:w-auto">Generate JSON</button>
+                </div>
+            </form>
         </div>
 
-        <div id="error-message" class="warning mt-6" style="display: none;"></div>
-
+        <!-- JSON Output -->
+        <div id="output-section-generator" class="mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4">3. Generated JSON</h2>
+            <p class="text-gray-400 mb-4">Save this as `<Comic ID>.json` inside your `/comics` folder.</p>
+            <div class="flex items-center gap-4 mb-4">
+                <button id="copy-json-btn" class="btn-secondary text-sm px-3 py-1.5 rounded-md">Copy JSON</button>
+                <button id="download-json-btn" class="btn-green text-sm px-3 py-1.5 rounded-md">Download .json</button>
+            </div>
+            <pre id="json-output" class="bg-gray-800 border border-gray-700 rounded-lg p-4 overflow-x-auto text-sm whitespace-pre-wrap"></pre>
+        </div>
     </div>
 
     <script>
-        // Placeholder values for image dimensions from your original Post.txt
-        const IMAGE_WIDTH = 2000;
-        const IMAGE_HEIGHT = 2860;
+        // --- URL Extractor Logic ---
+        const extractBtn = document.getElementById('extract-btn');
+        const inputText = document.getElementById('input-text');
+        const outputSectionExtractor = document.getElementById('output-section-extractor');
+        const outputListExtractor = document.getElementById('output-list-extractor');
+        const outputTitleExtractor = document.getElementById('output-title-extractor');
+        const copyAllBtn = document.getElementById('copy-all-btn');
+        const copyAllStatus = document.getElementById('copy-all-status');
 
-        /**
-         * Splits the synopsis into a first line (quoted) and remaining content.
-         */
-        function splitSynopsis(text) {
-            if (!text) return ['No synopsis.', ''];
-            // Normalize spaces and try to split by the first sentence
-            const cleanText = text.trim().replace(/\s+/g, ' ');
-            const sentences = cleanText.match(/[^.!?]+[.!?]/g) || [cleanText];
-            
-            // First line is the first detected sentence (or all of it), with quotes escaped
-            const firstLine = sentences[0] ? sentences[0].trim().replace(/"/g, "'") : cleanText.replace(/"/g, "'");
+        extractBtn.addEventListener('click', () => {
+            const rawText = inputText.value;
+            if (!rawText.trim()) { return; }
+            const urlRegex = /https?:\/\/[^\s"'<>]*?\.(?:jpg|jpeg|png|gif|webp|avif)/gi;
+            const matches = rawText.match(urlRegex);
 
-            // Remaining is the rest
-            const remaining = sentences.slice(1).join(' ').trim();
-            
-            return [firstLine, remaining];
-        }
-
-        /**
-         * MAIN FUNCTION: Reads manual inputs and generates the files.
-         */
-        async function generateContent() {
-            const comicName = document.getElementById('comicName').value.trim();
-            const comicType = document.getElementById('comicType').value.trim();
-            const synopsis = document.getElementById('synopsis').value.trim();
-            const author = document.getElementById('author').value.trim();
-            const releaseYear = document.getElementById('releaseYear').value.trim();
-            const coverUrl = document.getElementById('coverUrl').value.trim();
-            
-            const resultsContainer = document.getElementById('results-container');
-            const errorElement = document.getElementById('error-message');
-            const loadingElement = document.getElementById('loading');
-            const generateButton = document.getElementById('generateButton');
-
-            errorElement.style.display = 'none';
-            resultsContainer.style.display = 'none';
-
-            if (!comicName || !synopsis || !coverUrl || !author || !comicType) {
-                errorElement.textContent = 'Please fill in all required fields (Name, Type, Synopsis, Author, Cover URL).';
-                errorElement.style.display = 'block';
-                return;
+            outputListExtractor.innerHTML = '';
+            if (matches && matches.length > 0) {
+                const uniqueUrls = [...new Set(matches)];
+                outputTitleExtractor.textContent = `Found ${uniqueUrls.length} unique image URLs`;
+                uniqueUrls.forEach(url => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-gray-800 p-2 rounded';
+                    div.innerHTML = `
+                        <input type="text" readonly value="${url}" class="bg-transparent border-0 p-1 text-sm text-gray-400 flex-grow">
+                        <button class="copy-single-url-btn btn-secondary text-xs px-2 py-1 rounded-md">Copy</button>
+                    `;
+                    outputListExtractor.appendChild(div);
+                });
+            } else {
+                outputTitleExtractor.textContent = 'No image URLs were found.';
             }
+            outputSectionExtractor.classList.remove('hidden');
+        });
 
-            loadingElement.style.display = 'block';
-            generateButton.disabled = true;
-
-            try {
-                // 1. Format Synopsis
-                const [synopsisLine1, synopsisRemaining] = splitSynopsis(synopsis);
-
-                // 2. Generate Post Content HTML
-                const postContentHtml = `<!-- 1. COVER IMAGE (Must be first for the homepage card thumbnail) -->
-<div class="separator" style="clear: both;"><a href="${coverUrl}" style="display: block; padding: 1em 0; text-align: center; "><img alt="" border="0" data-original-height="${IMAGE_HEIGHT}" data-original-width="${IMAGE_WIDTH}" src="${coverUrl}"/></a></div>
-
-<!-- 2. METADATA (Hidden fields - must use these specific IDs!) -->
-<span id="syn_bod" style="white-space: pre-wrap" class="p-4 bg-white/10 rounded-lg">
-"${synopsisLine1}"
-${synopsisRemaining}
-</span>
-<span id="tauther">${author}</span>
-<span id="tartist">${author}</span> <!-- Using Author as Artist if not separate -->
-<span id="trelease">${releaseYear}</span>
-
-<!-- 3. CRITICAL: Hidden element containing the UNIQUE SERIES LABEL -->
-<div class="chapter_get" data-labelchapter="${comicName}"></div>`;
-                
-                // 3. Generate Tags Text
-                const tagsText = `${comicName},Series,${comicType}`;
-
-                // 4. Update UI
-                document.getElementById('postContentOutput').textContent = postContentHtml;
-                document.getElementById('tagsOutput').textContent = tagsText;
-                resultsContainer.style.display = 'block';
-                console.log("Post content successfully generated from manual input.");
-
-            } catch (error) {
-                console.error("Error generating post:", error);
-                errorElement.textContent = `An internal error occurred during formatting: ${error.message}`;
-                errorElement.style.display = 'block';
-            } finally {
-                loadingElement.style.display = 'none';
-                generateButton.disabled = false;
+        outputListExtractor.addEventListener('click', (e) => {
+            if (e.target.classList.contains('copy-single-url-btn')) {
+                const url = e.target.previousElementSibling.value;
+                navigator.clipboard.writeText(url).then(() => {
+                    e.target.textContent = 'Copied!';
+                    setTimeout(() => { e.target.textContent = 'Copy'; }, 2000);
+                });
             }
-        }
+        });
 
-        // ----------------------------------------------------------------------
-        // FILE DOWNLOAD FUNCTION (Client-side)
-        // ----------------------------------------------------------------------
-        function downloadFile(elementId, filename) {
-            const textToSave = document.getElementById(elementId).textContent;
+        copyAllBtn.addEventListener('click', () => {
+            const urls = Array.from(outputListExtractor.querySelectorAll('input')).map(input => input.value).join('\n');
+            if (!urls) return;
+            navigator.clipboard.writeText(urls).then(() => {
+                copyAllStatus.textContent = 'All URLs copied!';
+                setTimeout(() => { copyAllStatus.textContent = ''; }, 3000);
+            });
+        });
+
+        // --- JSON Generator Logic ---
+        const comicForm = document.getElementById('comic-form');
+        const formTitle = document.getElementById('form-title');
+        const generateBtn = document.getElementById('generate-btn');
+        const chaptersContainer = document.getElementById('chapters-container');
+        const generateChaptersBtn = document.getElementById('generate-chapters-btn');
+        const chapterCountInput = document.getElementById('chapter-count');
+        const jsonFileInput = document.getElementById('json-file-input');
+        const jsonTextInput = document.getElementById('json-text-input');
+        const loadJsonTextBtn = document.getElementById('load-json-text-btn');
+        const outputSectionGenerator = document.getElementById('output-section-generator');
+        const jsonOutput = document.getElementById('json-output');
+        const copyJsonBtn = document.getElementById('copy-json-btn');
+        const downloadJsonBtn = document.getElementById('download-json-btn');
+
+        const formatDate = date => new Date(date).toISOString().split('T')[0];
+        const addDays = (date, days) => {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        };
+
+        const createChapterField = (chapterNum, chapterData = {}) => {
+            const div = document.createElement('div');
+            div.className = 'chapter-field-group bg-gray-800/50 p-4 rounded-lg border border-gray-700';
+            div.innerHTML = `
+                <h4 class="text-lg font-bold mb-3 text-purple-400">Chapter ${chapterNum}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label>Chapter Number</label><input type="text" class="chapter-number" value="${chapterData.chapter || chapterNum}" required></div>
+                    <div><label>Chapter Title</label><input type="text" class="chapter-title" placeholder="e.g., The Awakening" value="${chapterData.title || ''}" required></div>
+                </div>
+                <div class="mt-4"><label>Page URLs (one per line)</label><textarea class="chapter-pages" rows="5" placeholder="https://.../page1.jpg\\nhttps://.../page2.jpg" required>${(chapterData.pages || []).join('\n')}</textarea></div>`;
+            return div;
+        };
+
+        const renderChapterFields = () => {
+            const count = parseInt(chapterCountInput.value, 10) || 0;
+            const currentCount = chaptersContainer.children.length;
+            if (count > currentCount) {
+                for (let i = currentCount + 1; i <= count; i++) chaptersContainer.appendChild(createChapterField(i));
+            } else if (count < currentCount) {
+                for (let i = currentCount - 1; i >= count; i--) chaptersContainer.children[i].remove();
+            }
+        };
+
+        const populateForm = (data) => {
+            document.getElementById('comic-id').value = data.id || '';
+            document.getElementById('comic-title').value = data.title || '';
+            document.getElementById('comic-cover').value = data.coverImage || '';
+            document.getElementById('comic-description').value = data.description || '';
+            document.getElementById('comic-status').value = data.status || 'Ongoing';
+            document.getElementById('comic-tags').value = (data.tags || []).join(', ');
             
-            // Creates a Blob (binary data) from the text content
-            const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            
-            // Triggers the download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Clean up the URL object to free memory
-            URL.revokeObjectURL(link.href);
-        }
+            if (data.chapters && data.chapters.length > 0) {
+                document.getElementById('first-chapter-date').value = data.chapters[0].publishDate || '';
+                chapterCountInput.value = data.chapters.length;
+                chaptersContainer.innerHTML = '';
+                data.chapters.forEach((chap, i) => chaptersContainer.appendChild(createChapterField(i + 1, chap)));
+            } else {
+                chapterCountInput.value = 1;
+                renderChapterFields();
+            }
+            formTitle.textContent = 'Editing Comic';
+            generateBtn.textContent = 'Update JSON';
+        };
+
+        generateChaptersBtn.addEventListener('click', renderChapterFields);
+        loadJsonTextBtn.addEventListener('click', () => {
+            try { populateForm(JSON.parse(jsonTextInput.value)); jsonTextInput.value = ''; } catch (e) { alert('Invalid JSON.'); }
+        });
+        jsonFileInput.addEventListener('change', e => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (re) => { try { populateForm(JSON.parse(re.target.result)); } catch (err) { alert('Could not parse JSON file.'); } };
+            reader.readAsText(file);
+        });
+
+        comicForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const startDate = new Date(document.getElementById('first-chapter-date').value + 'T12:00:00Z');
+            const comicData = {
+                id: document.getElementById('comic-id').value.trim(),
+                title: document.getElementById('comic-title').value.trim(),
+                status: document.getElementById('comic-status').value,
+                tags: document.getElementById('comic-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+                description: document.getElementById('comic-description').value.trim(),
+                coverImage: document.getElementById('comic-cover').value.trim(),
+                chapters: Array.from(document.querySelectorAll('.chapter-field-group')).map((group, i) => ({
+                    chapter: group.querySelector('.chapter-number').value.trim(),
+                    title: group.querySelector('.chapter-title').value.trim(),
+                    publishDate: formatDate(addDays(startDate, i * 7)),
+                    pages: group.querySelector('.chapter-pages').value.split('\n').map(u => u.trim()).filter(Boolean)
+                }))
+            };
+            const jsonString = JSON.stringify(comicData, null, 2);
+            jsonOutput.textContent = jsonString;
+            outputSectionGenerator.classList.remove('hidden');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+
+        copyJsonBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(jsonOutput.textContent).then(() => {
+                copyJsonBtn.textContent = 'Copied!';
+                setTimeout(() => { copyJsonBtn.textContent = 'Copy JSON'; }, 2000);
+            });
+        });
+        
+        downloadJsonBtn.addEventListener('click', () => {
+            const comicId = document.getElementById('comic-id').value.trim();
+            const filename = comicId ? `${comicId}.json` : 'comic.json';
+            const blob = new Blob([jsonOutput.textContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        renderChapterFields();
+        document.getElementById('first-chapter-date').valueAsDate = new Date();
     </script>
 </body>
 </html>
+
